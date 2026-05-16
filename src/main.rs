@@ -1,14 +1,11 @@
 mod chat;
 mod commands;
+mod loader;
 mod personal;
 mod problem;
 mod sheets;
 
-use std::{
-    env,
-    fs::File,
-    io::{BufRead, BufReader},
-};
+use std::env;
 
 use clap::{Parser, Subcommand};
 use teloxide::prelude::*;
@@ -34,7 +31,7 @@ async fn main() {
 
     match Cli::parse().command {
         Command::Listen => listen().await,
-        Command::Load => load().await,
+        Command::Load => println!("{}", loader::load().await),
     }
 }
 
@@ -52,24 +49,4 @@ async fn listen() {
         }
     })
     .await;
-}
-
-async fn load() {
-    let path = env::var("PROBLEMS_FILE").unwrap_or_else(|_| "problems.jsonl".into());
-    let spreadsheet_id = env::var("SPREADSHEET_ID").expect("SPREADSHEET_ID not set");
-
-    let file = File::open(&path).unwrap_or_else(|e| panic!("Cannot open {path}: {e}"));
-    let reader = BufReader::new(file);
-
-    for line in reader.lines() {
-        let line = line.expect("Failed to read line");
-        if line.trim().is_empty() {
-            continue;
-        }
-        let problem: problem::Problem =
-            serde_json::from_str(&line).expect("Failed to parse problem");
-        sheets::append_problem(&problem, &spreadsheet_id)
-            .await
-            .unwrap_or_else(|e| eprintln!("Failed to append problem: {e}"));
-    }
 }
