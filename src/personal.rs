@@ -5,6 +5,7 @@ pub fn handle(msg: &Message) {
         return;
     }
     if let Some(text) = msg.text() {
+        // Logs private messages for monitoring; ensure deployment logs are private
         println!("{}", text);
     }
 }
