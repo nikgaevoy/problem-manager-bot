@@ -52,7 +52,7 @@ pub async fn handle(bot: &Bot, msg: &Message, hashtag: &str) -> ResponseResult<(
     Ok(())
 }
 
-fn message_link(msg: &Message) -> String {
+pub fn message_link(msg: &Message) -> String {
     if let Some(username) = msg.chat.username() {
         format!("https://t.me/{}/{}", username, msg.id)
     } else {
@@ -60,6 +60,16 @@ fn message_link(msg: &Message) -> String {
         let id = msg.chat.id.0.unsigned_abs().to_string();
         let short = id.strip_prefix("100").unwrap_or(&id);
         format!("https://t.me/c/{}/{}", short, msg.id)
+    }
+}
+
+pub fn chat_link_prefix(msg: &Message) -> String {
+    if let Some(username) = msg.chat.username() {
+        format!("https://t.me/{}/", username)
+    } else {
+        let id = msg.chat.id.0.unsigned_abs().to_string();
+        let short = id.strip_prefix("100").unwrap_or(&id);
+        format!("https://t.me/c/{}/", short)
     }
 }
 
