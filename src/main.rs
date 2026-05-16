@@ -1,3 +1,4 @@
+mod authors;
 mod chat;
 mod commands;
 mod loader;

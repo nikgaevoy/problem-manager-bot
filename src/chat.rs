@@ -5,7 +5,7 @@ use teloxide::{
     types::{ChatKind, MessageEntityKind, ReplyParameters},
 };
 
-use crate::problem::Problem;
+use crate::{authors, problem::Problem};
 
 pub async fn handle(bot: &Bot, msg: &Message, hashtag: &str) -> ResponseResult<()> {
     if matches!(msg.chat.kind, ChatKind::Private(_)) {
@@ -31,7 +31,10 @@ pub async fn handle(bot: &Bot, msg: &Message, hashtag: &str) -> ResponseResult<(
         let rest = rest.trim().to_string();
 
         let reply = ReplyParameters::new(msg.id);
-        match Problem::from_message(message_link(msg), rest) {
+        let author = msg.from.as_ref()
+            .map(|u| authors::resolve(u.id.0, u.full_name()))
+            .unwrap_or_default();
+        match Problem::from_message(message_link(msg), rest, author) {
             Ok(problem) => {
                 println!("{:?}", problem);
                 log_problem(&problem);
