@@ -1,15 +1,42 @@
 use std::env;
 
-use teloxide::{prelude::*, types::{ChatKind, ReplyParameters}};
+use teloxide::{prelude::*, types::{BotCommand, BotCommandScope, ChatKind, ReplyParameters}};
 
 use crate::{authors, chat, focus, loader, problem::Problem};
 
+pub async fn register_commands(bot: &Bot) {
+    let private = vec![
+        BotCommand::new("set_name", "Set your display name for attribution"),
+        BotCommand::new("help", "Show available commands"),
+    ];
+    let group = vec![
+        BotCommand::new("set_name", "Set your display name for attribution"),
+        BotCommand::new("set_difficulty", "Set difficulty for the target problem"),
+        BotCommand::new("set_tags", "Set tags for the target problem"),
+        BotCommand::new("editorial", "Reply to attach editorial to the target problem"),
+        BotCommand::new("solution", "Alias for /editorial"),
+        BotCommand::new("focus_problem", "Reply to focus a problem for 20 minutes"),
+        BotCommand::new("clear_focus", "Clear the focused problem"),
+        BotCommand::new("load", "Push pending problems to the spreadsheet"),
+        BotCommand::new("leave", "Make the bot leave the chat"),
+        BotCommand::new("help", "Show available commands"),
+    ];
+    bot.set_my_commands(private)
+        .scope(BotCommandScope::AllPrivateChats)
+        .await
+        .unwrap();
+    bot.set_my_commands(group)
+        .scope(BotCommandScope::AllGroupChats)
+        .await
+        .unwrap();
+}
+
 pub async fn handle(bot: &Bot, msg: &Message) -> ResponseResult<()> {
     if let Some(text) = msg.text() {
-        if let Some(name) = text.strip_prefix("/setname") {
+        if let Some(name) = text.strip_prefix("/set_name") {
             let name = name.trim().to_string();
             let reply = match msg.from.as_ref() {
-                _ if name.is_empty() => "Usage: /setname <your name>".to_string(),
+                _ if name.is_empty() => "Usage: /set_name <your name>".to_string(),
                 Some(user) => {
                     authors::set(user.id.0, name.clone());
                     format!("Your name is now \"{name}\"")
@@ -30,7 +57,7 @@ pub async fn handle(bot: &Bot, msg: &Message) -> ResponseResult<()> {
 
 Submit a problem. The first line is the name, the rest is the legend.
 
-/setname <name> — set your display name for attribution
+/set_name <name> — set your display name for attribution
 /set_difficulty <value> — set difficulty for your last problem (group only)
 /set_tags <value> — set tags for your last problem (group only)
 /editorial (or /solution) — reply to load editorial for your last problem (group only)

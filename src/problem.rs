@@ -25,9 +25,6 @@ impl Problem {
         &self.author
     }
 
-    pub fn date(&self) -> chrono::DateTime<chrono::Utc> {
-        self.date
-    }
 
     pub fn set_difficulty(&mut self, v: String) {
         self.difficulty = v;
@@ -49,8 +46,8 @@ impl Problem {
         vec![
             self.name.clone(),
             self.author.clone(),
-            self.date.format(&std::env::var("DATE_FORMAT").unwrap_or_else(|_| "%Y-%m-%d %H:%M:%S".into())).to_string(),
             self.difficulty.clone(),
+            self.date.format(&std::env::var("DATE_FORMAT").unwrap_or_else(|_| "%Y-%m-%d %H:%M:%S".into())).to_string(),
             self.legend.clone(),
             self.editorial.clone(),
             self.tags.clone(),

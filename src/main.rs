@@ -40,6 +40,7 @@ async fn main() {
 async fn listen() {
     let hashtag = env::var("HASHTAG").expect("HASHTAG not set");
     let bot = Bot::from_env();
+    commands::register_commands(&bot).await;
 
     teloxide::repl(bot, move |bot: Bot, msg: Message| {
         let hashtag = hashtag.clone();

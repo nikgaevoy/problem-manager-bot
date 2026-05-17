@@ -21,7 +21,7 @@ The first line after the hashtag is the problem name; everything after is the le
 
 | Command | Where | Description |
 |---------|-------|-------------|
-| `/setname <name>` | Any chat | Set your display name for problem attribution |
+| `/set_name <name>` | Any chat | Set your display name for problem attribution |
 | `/help` | Any chat | Show available commands |
 | `/set_difficulty <value>` | Group chat | Set difficulty for the target problem (reply > focus > last problem) |
 | `/set_tags <value>` | Group chat | Set tags for the target problem (reply > focus > last problem) |
