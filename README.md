@@ -23,6 +23,7 @@ The first line after the hashtag is the problem name; everything after is the le
 | `/help` | Any chat | Show available commands |
 | `/set_difficulty <value>` | Group chat | Set difficulty for your last problem, or the replied-to problem |
 | `/set_tags <value>` | Group chat | Set tags for your last problem, or the replied-to problem |
+| `/editorial` (or `/solution`) | Group chat | Reply to a message to set it as the editorial for your last problem; if the replied message is itself a reply to the statement, that problem is matched by link |
 | `/load` | Group chat | Push pending problems to the spreadsheet |
 | `/leave` | Group chat | Make the bot leave the chat |
 

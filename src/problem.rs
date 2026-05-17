@@ -37,6 +37,14 @@ impl Problem {
         self.tags = v;
     }
 
+    pub fn set_editorial(&mut self, v: String) {
+        self.editorial = v;
+    }
+
+    pub fn set_editorial_link(&mut self, v: String) {
+        self.editorial_link = v;
+    }
+
     pub fn to_sheet_row(&self) -> Vec<String> {
         vec![
             self.name.clone(),

@@ -33,6 +33,7 @@ Submit a problem. The first line is the name, the rest is the legend.
 /setname <name> — set your display name for attribution
 /set_difficulty <value> — set difficulty for your last problem (group only)
 /set_tags <value> — set tags for your last problem (group only)
+/editorial (or /solution) — reply to load editorial for your last problem (group only)
 /load — push pending problems to the spreadsheet (group only)
 /leave — make the bot leave the chat (group only)
 /help — show this message"
@@ -61,8 +62,69 @@ Submit a problem. The first line is the name, the rest is the legend.
             let value = text["/set_tags".len()..].trim().to_string();
             set_field(bot, msg, "/set_tags", value, Problem::set_tags).await?;
         }
+        Some("/editorial") | Some("/solution") => {
+            set_editorial(bot, msg).await?;
+        }
         _ => {}
     }
+    Ok(())
+}
+
+async fn set_editorial(bot: &Bot, msg: &Message) -> ResponseResult<()> {
+    let reply = ReplyParameters::new(msg.id);
+
+    let editorial_msg = match msg.reply_to_message() {
+        Some(m) => m,
+        None => {
+            bot.send_message(msg.chat.id, "Reply to a message containing the editorial.")
+                .reply_parameters(reply)
+                .await?;
+            return Ok(());
+        }
+    };
+
+    let editorial = match editorial_msg.text() {
+        Some(t) => t.to_string(),
+        None => {
+            bot.send_message(msg.chat.id, "The replied message has no text.")
+                .reply_parameters(reply)
+                .await?;
+            return Ok(());
+        }
+    };
+
+    let editorial_link = chat::message_link(editorial_msg);
+
+    let target_link = if let Some(statement_msg) = editorial_msg.reply_to_message() {
+        Some(chat::message_link(statement_msg))
+    } else {
+        let author = msg.from.as_ref()
+            .map(|u| authors::resolve(u.id.0, u.full_name()))
+            .unwrap_or_default();
+        find_target_link(msg, &author)
+    };
+
+    let target_link = match target_link {
+        Some(link) => link,
+        None => {
+            bot.send_message(msg.chat.id, "No matching problem found in the pending list.")
+                .reply_parameters(reply)
+                .await?;
+            return Ok(());
+        }
+    };
+
+    let result = match update_problem(&target_link, |p| {
+        p.set_editorial(editorial);
+        p.set_editorial_link(editorial_link);
+    }) {
+        Ok(name) => format!("Updated: {name}"),
+        Err(e) => e,
+    };
+
+    bot.send_message(msg.chat.id, result)
+        .reply_parameters(reply)
+        .await?;
     Ok(())
 }
 
