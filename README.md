@@ -23,9 +23,11 @@ The first line after the hashtag is the problem name; everything after is the le
 |---------|-------|-------------|
 | `/setname <name>` | Any chat | Set your display name for problem attribution |
 | `/help` | Any chat | Show available commands |
-| `/set_difficulty <value>` | Group chat | Set difficulty for your last problem, or the replied-to problem |
-| `/set_tags <value>` | Group chat | Set tags for your last problem, or the replied-to problem |
-| `/editorial` (or `/solution`) | Group chat | Reply to a message to set it as the editorial for your last problem; if the replied message is itself a reply to the statement, that problem is matched by link |
+| `/set_difficulty <value>` | Group chat | Set difficulty for the target problem (reply > focus > last problem) |
+| `/set_tags <value>` | Group chat | Set tags for the target problem (reply > focus > last problem) |
+| `/editorial` (or `/solution`) | Group chat | Reply to the editorial message to attach it to the target problem; if the editorial message is itself a reply to the statement, that link is used, otherwise falls back to focus > last problem |
+| `/focus_problem` | Group chat | Reply to a problem to make it the target for subsequent commands for 20 minutes; without a reply, clears the focus |
+| `/clear_focus` | Group chat | Clear the focused problem, reverting to the last-problem default |
 | `/load` | Group chat | Push pending problems to the spreadsheet |
 | `/leave` | Group chat | Make the bot leave the chat |
 

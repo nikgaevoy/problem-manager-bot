@@ -1,6 +1,7 @@
 mod authors;
 mod chat;
 mod commands;
+mod focus;
 mod loader;
 mod personal;
 mod problem;

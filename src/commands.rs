@@ -2,7 +2,7 @@ use std::env;
 
 use teloxide::{prelude::*, types::{ChatKind, ReplyParameters}};
 
-use crate::{authors, chat, loader, problem::Problem};
+use crate::{authors, chat, focus, loader, problem::Problem};
 
 pub async fn handle(bot: &Bot, msg: &Message) -> ResponseResult<()> {
     if let Some(text) = msg.text() {
@@ -34,6 +34,8 @@ Submit a problem. The first line is the name, the rest is the legend.
 /set_difficulty <value> — set difficulty for your last problem (group only)
 /set_tags <value> — set tags for your last problem (group only)
 /editorial (or /solution) — reply to load editorial for your last problem (group only)
+/focus_problem — reply to a problem to focus it for 20 minutes (group only)
+/clear_focus — clear the focused problem (group only)
 /load — push pending problems to the spreadsheet (group only)
 /leave — make the bot leave the chat (group only)
 /help — show this message"
@@ -64,6 +66,12 @@ Submit a problem. The first line is the name, the rest is the legend.
         }
         Some("/editorial") | Some("/solution") => {
             set_editorial(bot, msg).await?;
+        }
+        Some("/focus_problem") => {
+            focus_problem(bot, msg).await?;
+        }
+        Some("/clear_focus") => {
+            clear_focus(bot, msg).await?;
         }
         _ => {}
     }
@@ -173,6 +181,11 @@ fn find_target_link(msg: &Message, author: &str) -> Option<String> {
     if let Some(reply) = msg.reply_to_message() {
         return Some(chat::message_link(reply));
     }
+    if let Some(user_id) = msg.from.as_ref().map(|u| u.id.0) {
+        if let Some(link) = focus::get(user_id) {
+            return Some(link);
+        }
+    }
     let prefix = chat::chat_link_prefix(msg);
     let path = env::var("PROBLEMS_FILE").unwrap_or_else(|_| "problems.jsonl".into());
     let content = std::fs::read_to_string(path).ok()?;
@@ -181,6 +194,57 @@ fn find_target_link(msg: &Message, author: &str) -> Option<String> {
         .filter(|p| p.link().starts_with(&prefix) && p.author() == author)
         .last()
         .map(|p| p.link().to_string())
+}
+
+async fn focus_problem(bot: &Bot, msg: &Message) -> ResponseResult<()> {
+    let reply_params = ReplyParameters::new(msg.id);
+
+    let reply_msg = match msg.reply_to_message() {
+        Some(m) => m,
+        None => {
+            if let Some(user) = msg.from.as_ref() {
+                focus::clear(user.id.0);
+            }
+            bot.send_message(msg.chat.id, "Focus cleared.")
+                .reply_parameters(reply_params)
+                .await?;
+            return Ok(());
+        }
+    };
+
+    let link = chat::message_link(reply_msg);
+
+    let path = env::var("PROBLEMS_FILE").unwrap_or_else(|_| "problems.jsonl".into());
+    let content = std::fs::read_to_string(&path).unwrap_or_default();
+    let is_problem = content.lines()
+        .filter_map(|l| serde_json::from_str::<Problem>(l).ok())
+        .any(|p| p.link() == link);
+
+    if !is_problem {
+        bot.send_message(msg.chat.id, "The replied message is not a known pending problem.")
+            .reply_parameters(reply_params)
+            .await?;
+        return Ok(());
+    }
+
+    if let Some(user) = msg.from.as_ref() {
+        focus::set(user.id.0, link);
+        bot.send_message(msg.chat.id, "Focus set for 20 minutes.")
+            .reply_parameters(reply_params)
+            .await?;
+    }
+    Ok(())
+}
+
+async fn clear_focus(bot: &Bot, msg: &Message) -> ResponseResult<()> {
+    let reply_params = ReplyParameters::new(msg.id);
+    if let Some(user) = msg.from.as_ref() {
+        focus::clear(user.id.0);
+    }
+    bot.send_message(msg.chat.id, "Focus cleared.")
+        .reply_parameters(reply_params)
+        .await?;
+    Ok(())
 }
 
 fn update_problem(link: &str, setter: impl FnOnce(&mut Problem)) -> Result<String, String> {
