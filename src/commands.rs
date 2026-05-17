@@ -31,10 +31,26 @@ pub async fn register_commands(bot: &Bot) {
         .unwrap();
 }
 
+fn strip_command<'a>(text: &'a str, cmd: &str) -> Option<&'a str> {
+    let rest = text.strip_prefix(cmd)?;
+    let rest = match rest.chars().next() {
+        None | Some(' ') | Some('\n') => rest,
+        Some('@') => {
+            let after_at = &rest[1..];
+            match after_at.find(|c: char| c.is_whitespace()) {
+                Some(i) => &after_at[i..],
+                None => "",
+            }
+        }
+        _ => return None,
+    };
+    Some(rest.trim_start())
+}
+
 pub async fn handle(bot: &Bot, msg: &Message) -> ResponseResult<()> {
     if let Some(text) = msg.text() {
-        if let Some(name) = text.strip_prefix("/set_name") {
-            let name = name.trim().to_string();
+        if let Some(name) = strip_command(text, "/set_name") {
+            let name = name.to_string();
             let reply = match msg.from.as_ref() {
                 _ if name.is_empty() => "Usage: /set_name <your name>".to_string(),
                 Some(user) => {
@@ -47,7 +63,7 @@ pub async fn handle(bot: &Bot, msg: &Message) -> ResponseResult<()> {
             return Ok(());
         }
 
-        if text.trim() == "/help" {
+        if strip_command(text, "/help").is_some() {
             let hashtag = env::var("HASHTAG").unwrap_or_else(|_| "problem".into());
             let hashtag = format!("#{}", hashtag.trim_start_matches('#'));
             let reply = format!(
@@ -75,32 +91,24 @@ Submit a problem. The first line is the name, the rest is the legend.
     if matches!(msg.chat.kind, ChatKind::Private(_)) {
         return Ok(());
     }
-    match msg.text() {
-        Some("/leave") => {
+
+    if let Some(text) = msg.text() {
+        if strip_command(text, "/leave").is_some() {
             bot.leave_chat(msg.chat.id).await?;
-        }
-        Some("/load") => {
+        } else if strip_command(text, "/load").is_some() {
             let result = loader::load().await;
             bot.send_message(msg.chat.id, result).await?;
-        }
-        Some(text) if text.starts_with("/set_difficulty") => {
-            let value = text["/set_difficulty".len()..].trim().to_string();
-            set_field(bot, msg, "/set_difficulty", value, Problem::set_difficulty).await?;
-        }
-        Some(text) if text.starts_with("/set_tags") => {
-            let value = text["/set_tags".len()..].trim().to_string();
-            set_field(bot, msg, "/set_tags", value, Problem::set_tags).await?;
-        }
-        Some("/editorial") | Some("/solution") => {
+        } else if let Some(value) = strip_command(text, "/set_difficulty") {
+            set_field(bot, msg, "/set_difficulty", value.to_string(), Problem::set_difficulty).await?;
+        } else if let Some(value) = strip_command(text, "/set_tags") {
+            set_field(bot, msg, "/set_tags", value.to_string(), Problem::set_tags).await?;
+        } else if strip_command(text, "/editorial").is_some() || strip_command(text, "/solution").is_some() {
             set_editorial(bot, msg).await?;
-        }
-        Some("/focus_problem") => {
+        } else if strip_command(text, "/focus_problem").is_some() {
             focus_problem(bot, msg).await?;
-        }
-        Some("/clear_focus") => {
+        } else if strip_command(text, "/clear_focus").is_some() {
             clear_focus(bot, msg).await?;
         }
-        _ => {}
     }
     Ok(())
 }
