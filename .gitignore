@@ -2,3 +2,4 @@
 .env
 problems.jsonl
 loaded_problems.jsonl
+authors.json
