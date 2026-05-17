@@ -47,7 +47,7 @@ impl Problem {
             self.name.clone(),
             self.author.clone(),
             self.difficulty.clone(),
-            self.date.format(&std::env::var("DATE_FORMAT").unwrap_or_else(|_| "%Y-%m-%d %H:%M:%S".into())).to_string(),
+            self.date.format("%Y-%m-%d %H:%M:%S").to_string(),
             self.legend.clone(),
             self.editorial.clone(),
             self.tags.clone(),

@@ -37,19 +37,48 @@ If the text after the hashtag contains a newline, the first line is the problem 
 | `/load` | Group chat | Push pending problems to the spreadsheet |
 | `/leave` | Group chat | Make the bot leave the chat |
 
-The bot can also be run from the command line:
+## CLI subcommands
 
-```sh
-cargo run -- load   # push pending problems to the spreadsheet
-cargo run -- scan <path>   # scan a Telegram Desktop HTML export for missed problems
+```
+problem_manager_bot <subcommand> [options]
 ```
 
-### Recovering missed problems
+| Subcommand | Description |
+|------------|-------------|
+| `listen` | Start the Telegram bot and listen for new messages |
+| `load` | Push all pending problems from the log file to the spreadsheet |
+| `scan <dir> [--chat-username <u> \| --chat-id <id>]` | Scan a Telegram Desktop HTML export and add any new problems found |
 
-The Telegram Bot API does not allow bots to retrieve past messages. To recover problems posted before the bot was added, or while it was offline:
+### `scan` in detail
 
-1. Open Telegram Desktop → right-click the group → **Export chat history** → select **HTML** format
-2. Run `cargo run -- scan <path> --chat-username mygroup` (public group) or `--chat-id 1234567890` (private group) to enable deduplication against already-saved problems
+The Telegram Bot API does not allow bots to retrieve past messages. Use `scan` to recover problems posted before the bot was added or while it was offline:
+
+1. Open Telegram Desktop → right-click the group → **Export chat history** → select **HTML** format.
+2. Run:
+   ```sh
+   # Public group (uses @username for message links)
+   problem_manager_bot scan /path/to/export --chat-username my_group
+
+   # Private group (uses numeric ID for message links)
+   problem_manager_bot scan /path/to/export --chat-id 1234567890
+   ```
+   Omitting both flags still imports problems but produces bare message IDs instead of full links.
+
+### Spreadsheet columns
+
+Each problem is appended as one row with the following columns in order:
+
+| # | Column |
+|---|--------|
+| A | Name |
+| B | Author |
+| C | Difficulty |
+| D | Date |
+| E | Legend |
+| F | Editorial |
+| G | Tags |
+| H | Link |
+| I | Editorial link |
 
 ## Setup
 
@@ -70,16 +99,5 @@ Copy `.env.example` to `.env` and fill in the values:
 | `SPREADSHEET_ID` | Google Sheets spreadsheet ID |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Path to the GCP service account JSON key file |
 | `SHEET_NAME` | Sheet tab name to append rows to (default: `Sheet1`) |
-| `DATE_FORMAT` | [strftime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) format for the date column (default: `%Y-%m-%d %H:%M:%S`) |
 | `PROBLEMS_FILE` | Path for the pending problems log (default: `problems.jsonl`) |
 | `LOADED_PROBLEMS_FILE` | Path for the already-loaded problems log (default: `loaded_problems.jsonl`) |
-
-### Running
-
-```sh
-# Listen for Telegram messages
-cargo run -- listen
-
-# Push pending problems to the spreadsheet
-cargo run -- load
-```

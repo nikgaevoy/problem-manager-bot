@@ -76,10 +76,10 @@ or
 Submit a problem. If the text after the hashtag contains a newline, the first line is the name and the rest is the legend. Otherwise the whole text is treated as the legend.
 
 /set_name <name> — set your display name for attribution
-/set_difficulty <value> — set difficulty for your last problem (group only)
-/set_tags <value> — set tags for your last problem (group only)
-/editorial (or /solution) — reply to load editorial for your last problem (group only)
-/focus_problem — reply to a problem to focus it for 20 minutes (group only)
+/set_difficulty <value> — set difficulty for the target problem: reply > focus > last (group only)
+/set_tags <value> — set tags for the target problem: reply > focus > last (group only)
+/editorial (or /solution) — reply to an editorial message to attach it to the target problem: reply-to-reply > focus > last (group only)
+/focus_problem — reply to a problem to focus it for 20 minutes; without a reply, clears focus (group only)
 /clear_focus — clear the focused problem (group only)
 /load — push pending problems to the spreadsheet (group only)
 /leave — make the bot leave the chat (group only)
