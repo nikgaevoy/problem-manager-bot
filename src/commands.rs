@@ -146,7 +146,7 @@ async fn set_editorial(bot: &Bot, msg: &Message) -> ResponseResult<()> {
         let author = msg.from.as_ref()
             .map(|u| authors::resolve(u.id.0, u.full_name()))
             .unwrap_or_default();
-        find_target_link(msg, &author)
+        find_focus_or_last(msg, &author)
     };
 
     let target_link = match target_link {
@@ -214,10 +214,7 @@ async fn set_field(
     Ok(())
 }
 
-fn find_target_link(msg: &Message, author: &str) -> Option<String> {
-    if let Some(reply) = msg.reply_to_message() {
-        return Some(chat::message_link(reply));
-    }
+fn find_focus_or_last(msg: &Message, author: &str) -> Option<String> {
     if let Some(user_id) = msg.from.as_ref().map(|u| u.id.0) {
         if let Some(link) = focus::get(user_id) {
             return Some(link);
@@ -231,6 +228,13 @@ fn find_target_link(msg: &Message, author: &str) -> Option<String> {
         .filter(|p| p.link().starts_with(&prefix) && p.author() == author)
         .last()
         .map(|p| p.link().to_string())
+}
+
+fn find_target_link(msg: &Message, author: &str) -> Option<String> {
+    if let Some(reply) = msg.reply_to_message() {
+        return Some(chat::message_link(reply));
+    }
+    find_focus_or_last(msg, author)
 }
 
 async fn focus_problem(bot: &Bot, msg: &Message) -> ResponseResult<()> {
