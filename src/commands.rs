@@ -17,7 +17,7 @@ pub async fn register_commands(bot: &Bot) {
         BotCommand::new("solution", "Alias for /editorial"),
         BotCommand::new("focus_problem", "Reply to focus a problem for 20 minutes"),
         BotCommand::new("clear_focus", "Clear the focused problem"),
-        BotCommand::new("load", "Push pending problems to the spreadsheet"),
+BotCommand::new("load", "Push pending problems to the spreadsheet"),
         BotCommand::new("leave", "Make the bot leave the chat"),
         BotCommand::new("help", "Show available commands"),
     ];
@@ -68,10 +68,12 @@ pub async fn handle(bot: &Bot, msg: &Message) -> ResponseResult<()> {
             let hashtag = format!("#{}", hashtag.trim_start_matches('#'));
             let reply = format!(
                 "\
+{hashtag} <Legend>
+or
 {hashtag} <Problem Name>
 <Legend>
 
-Submit a problem. The first line is the name, the rest is the legend.
+Submit a problem. If the text after the hashtag contains a newline, the first line is the name and the rest is the legend. Otherwise the whole text is treated as the legend.
 
 /set_name <name> — set your display name for attribution
 /set_difficulty <value> — set difficulty for your last problem (group only)
@@ -295,7 +297,8 @@ fn update_problem(link: &str, setter: impl FnOnce(&mut Problem)) -> Result<Strin
 
     let mut p: Problem = serde_json::from_str(&lines[idx]).map_err(|e| e.to_string())?;
     setter(&mut p);
-    let name = p.name().to_string();
+    let name = p.name();
+    let display = if name.is_empty() { link } else { name }.to_string();
     lines[idx] = serde_json::to_string(&p).map_err(|e| e.to_string())?;
 
     let mut new_content = lines.join("\n");
@@ -305,5 +308,5 @@ fn update_problem(link: &str, setter: impl FnOnce(&mut Problem)) -> Result<Strin
     std::fs::write(&path, new_content)
         .map_err(|e| format!("Cannot write {path}: {e}"))?;
 
-    Ok(name)
+    Ok(display)
 }

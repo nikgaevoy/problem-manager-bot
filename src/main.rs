@@ -5,6 +5,7 @@ mod focus;
 mod loader;
 mod personal;
 mod problem;
+mod scanner;
 mod sheets;
 
 use std::env;
@@ -24,6 +25,17 @@ enum Command {
     Listen,
     /// Load problems from the log file into the Google Spreadsheet
     Load,
+    /// Scan a Telegram Desktop HTML export and add new problems
+    Scan {
+        /// Path to the export directory containing messages*.html files
+        dir: String,
+        /// Username of the group (without @) for constructing message links in public groups
+        #[arg(long)]
+        chat_username: Option<String>,
+        /// Numeric ID of the group for constructing message links in private groups
+        #[arg(long)]
+        chat_id: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -34,6 +46,9 @@ async fn main() {
     match Cli::parse().command {
         Command::Listen => listen().await,
         Command::Load => println!("{}", loader::load().await),
+        Command::Scan { dir, chat_username, chat_id } => {
+            println!("{}", scanner::scan(&dir, chat_username.as_deref(), chat_id.as_deref()))
+        }
     }
 }
 

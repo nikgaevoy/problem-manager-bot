@@ -62,11 +62,10 @@ impl Problem {
         author: String,
         date: chrono::DateTime<chrono::Utc>,
     ) -> Result<Self, String> {
-        let (name, legend) = message
-            .split_once('\n')
-            .ok_or("Empty legend, problem not loaded")?;
-        let name = name.trim().to_string();
-        let legend = legend.trim().to_string();
+        let (name, legend) = match message.split_once('\n') {
+            Some((n, l)) => (n.trim().to_string(), l.trim().to_string()),
+            None => (String::new(), message.trim().to_string()),
+        };
         Ok(Self {
             link,
             legend,

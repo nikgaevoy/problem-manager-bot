@@ -38,7 +38,8 @@ pub async fn handle(bot: &Bot, msg: &Message, hashtag: &str) -> ResponseResult<(
             Ok(problem) => {
                 println!("{:?}", problem);
                 log_problem(&problem);
-                bot.send_message(msg.chat.id, format!("Saved: {}", problem.name()))
+                let display = if problem.name().is_empty() { problem.link() } else { problem.name() };
+                bot.send_message(msg.chat.id, format!("Saved: {}", display))
                     .reply_parameters(reply)
                     .await?;
             }

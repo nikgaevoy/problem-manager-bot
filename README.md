@@ -11,11 +11,17 @@ The bot watches a Telegram group for messages tagged with a configured hashtag (
 ### Message format
 
 ```
+#problem Legend describing the problem statement.
+```
+
+or, with a name:
+
+```
 #problem Problem Name
 Legend describing the problem statement.
 ```
 
-The first line after the hashtag is the problem name; everything after is the legend.
+If the text after the hashtag contains a newline, the first line is the problem name and the rest is the legend. Otherwise the entire text is treated as the legend and the name is left blank.
 
 ## Commands
 
@@ -31,7 +37,19 @@ The first line after the hashtag is the problem name; everything after is the le
 | `/load` | Group chat | Push pending problems to the spreadsheet |
 | `/leave` | Group chat | Make the bot leave the chat |
 
-The bot can also be run with `cargo run -- load` from the command line to trigger a load without Telegram.
+The bot can also be run from the command line:
+
+```sh
+cargo run -- load   # push pending problems to the spreadsheet
+cargo run -- scan <path>   # scan a Telegram Desktop HTML export for missed problems
+```
+
+### Recovering missed problems
+
+The Telegram Bot API does not allow bots to retrieve past messages. To recover problems posted before the bot was added, or while it was offline:
+
+1. Open Telegram Desktop → right-click the group → **Export chat history** → select **HTML** format
+2. Run `cargo run -- scan <path> --chat-username mygroup` (public group) or `--chat-id 1234567890` (private group) to enable deduplication against already-saved problems
 
 ## Setup
 
