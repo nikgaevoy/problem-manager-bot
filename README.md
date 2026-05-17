@@ -20,6 +20,9 @@ The first line after the hashtag is the problem name; everything after is the le
 | Command | Where | Description |
 |---------|-------|-------------|
 | `/setname <name>` | Any chat | Set your display name for problem attribution |
+| `/help` | Any chat | Show available commands |
+| `/set_difficulty <value>` | Group chat | Set difficulty for your last problem, or the replied-to problem |
+| `/set_tags <value>` | Group chat | Set tags for your last problem, or the replied-to problem |
 | `/load` | Group chat | Push pending problems to the spreadsheet |
 | `/leave` | Group chat | Make the bot leave the chat |
 
@@ -44,6 +47,7 @@ Copy `.env.example` to `.env` and fill in the values:
 | `SPREADSHEET_ID` | Google Sheets spreadsheet ID |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Path to the GCP service account JSON key file |
 | `SHEET_NAME` | Sheet tab name to append rows to (default: `Sheet1`) |
+| `DATE_FORMAT` | [strftime](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) format for the date column (default: `%Y-%m-%d %H:%M:%S`) |
 | `PROBLEMS_FILE` | Path for the pending problems log (default: `problems.jsonl`) |
 | `LOADED_PROBLEMS_FILE` | Path for the already-loaded problems log (default: `loaded_problems.jsonl`) |
 

@@ -31,7 +31,10 @@ pub async fn handle(bot: &Bot, msg: &Message) -> ResponseResult<()> {
 Submit a problem. The first line is the name, the rest is the legend.
 
 /setname <name> — set your display name for attribution
+/set_difficulty <value> — set difficulty for your last problem (group only)
+/set_tags <value> — set tags for your last problem (group only)
 /load — push pending problems to the spreadsheet (group only)
+/leave — make the bot leave the chat (group only)
 /help — show this message"
             );
             bot.send_message(msg.chat.id, reply).await?;

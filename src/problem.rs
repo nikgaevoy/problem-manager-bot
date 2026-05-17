@@ -4,6 +4,8 @@ pub struct Problem {
     legend: String,
     name: String,
     author: String,
+    #[serde(default)]
+    date: chrono::DateTime<chrono::Utc>,
     editorial: String,
     editorial_link: String,
     difficulty: String,
@@ -23,6 +25,10 @@ impl Problem {
         &self.author
     }
 
+    pub fn date(&self) -> chrono::DateTime<chrono::Utc> {
+        self.date
+    }
+
     pub fn set_difficulty(&mut self, v: String) {
         self.difficulty = v;
     }
@@ -31,14 +37,41 @@ impl Problem {
         self.tags = v;
     }
 
-    pub fn to_sheet_row(&self) -> Vec<&str> {
-        vec![&self.name, &self.link, &self.legend, &self.author, &self.editorial, &self.editorial_link, &self.difficulty, &self.tags]
+    pub fn to_sheet_row(&self) -> Vec<String> {
+        vec![
+            self.name.clone(),
+            self.author.clone(),
+            self.date.format(&std::env::var("DATE_FORMAT").unwrap_or_else(|_| "%Y-%m-%d %H:%M:%S".into())).to_string(),
+            self.difficulty.clone(),
+            self.legend.clone(),
+            self.editorial.clone(),
+            self.tags.clone(),
+            self.link.clone(),
+            self.editorial_link.clone(),
+        ]
     }
 
-    pub fn from_message(link: String, message: String, author: String) -> Result<Self, String> {
-        let (name, legend) = message.split_once('\n').ok_or("Empty legend, problem not loaded")?;
+    pub fn from_message(
+        link: String,
+        message: String,
+        author: String,
+        date: chrono::DateTime<chrono::Utc>,
+    ) -> Result<Self, String> {
+        let (name, legend) = message
+            .split_once('\n')
+            .ok_or("Empty legend, problem not loaded")?;
         let name = name.trim().to_string();
         let legend = legend.trim().to_string();
-        Ok(Self { link, legend, name, author, editorial: String::new(), editorial_link: String::new(), difficulty: String::new(), tags: String::new() })
+        Ok(Self {
+            link,
+            legend,
+            name,
+            author,
+            date,
+            editorial: String::new(),
+            editorial_link: String::new(),
+            difficulty: String::new(),
+            tags: String::new(),
+        })
     }
 }

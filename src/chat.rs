@@ -34,7 +34,7 @@ pub async fn handle(bot: &Bot, msg: &Message, hashtag: &str) -> ResponseResult<(
         let author = msg.from.as_ref()
             .map(|u| authors::resolve(u.id.0, u.full_name()))
             .unwrap_or_default();
-        match Problem::from_message(message_link(msg), rest, author) {
+        match Problem::from_message(message_link(msg), rest, author, msg.date) {
             Ok(problem) => {
                 println!("{:?}", problem);
                 log_problem(&problem);
