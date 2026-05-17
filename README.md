@@ -1,5 +1,7 @@
 # Problem Manager Bot
 
+[![CI](https://github.com/nikgaevoy/problem-manager-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/nikgaevoy/problem-manager-bot/actions/workflows/ci.yml)
+
 A Telegram bot for collecting and managing competitive programming problems from group chats into a Google Spreadsheet.
 
 ## How it works
